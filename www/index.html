@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Signature Pad</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+  }
+
+  .container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 20px; /* Adjust margin as needed */
+  }
+
+  #signature-pad {
+    border: 2px solid #000;
+    background-color: #fff;
+    width: 100%; /* Adjust width for responsiveness */
+    max-width: 600px; /* Maximum width for larger screens */
+    height: 300px; /* Adjust height as needed */
+    touch-action: none;
+  }
+
+  button {
+    margin-top: 10px;
+    padding: 10px 20px;
+    font-size: 16px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+
+  button:hover {
+    background-color: #45a049;
+  }
+  
+  #logo {
+    width: 100px; /* Adjust width as needed */
+    height: 100px; /* Adjust height as needed */
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <img src="Jatin_Jatin.jpeg" alt="Logo" id="logo"> <!-- Reference to your logo image -->
+  <canvas id="signature-pad"></canvas>
+</div>
+<div class="container">
+  <label for="color-picker">Change Color: </label>
+  <input type="color" id="color-picker" value="#000000">
+  <label for="background-color-picker">Change Background Color: </label>
+  <input type="color" id="background-color-picker" value="#ffffff">
+  <label for="pen-thickness">Pen Thickness:</label>
+  <input type="range" id="pen-thickness" min="1" max="10" value="2">
+  <button id="clear-btn">Clear Signature</button>
+  <button id="download-btn">Download Signature</button>
+</div>
+
+<script>
+  window.onload = function () {
+    var canvas = document.getElementById('signature-pad');
+    var ctx = canvas.getContext('2d');
+
+    // Set initial properties
+    var penColor = '#000000';
+    var backgroundColor = '#ffffff';
+    var penThickness = 2;
+
+    canvas.width = canvas.offsetWidth;
+    canvas.height = canvas.offsetHeight;
+
+    // Function to clear the canvas
+    function clearCanvas() {
+      ctx.fillStyle = backgroundColor;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+    }
+
+    // Initialize canvas
+    clearCanvas();
+
+    // Event listeners
+    document.getElementById('clear-btn').addEventListener('click', function () {
+      clearCanvas();
+    });
+
+    document.getElementById('download-btn').addEventListener('click', function () {
+      var dataURL = canvas.toDataURL();
+      var link = document.createElement("a");
+      link.href = dataURL;
+      link.download = "signature.png";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    });
+
+    document.getElementById('color-picker').addEventListener('change', function () {
+      penColor = this.value;
+    });
+
+    document.getElementById('background-color-picker').addEventListener('change', function () {
+      backgroundColor = this.value;
+      clearCanvas();
+    });
+
+    document.getElementById('pen-thickness').addEventListener('input', function () {
+      penThickness = parseInt(this.value, 10);
+    });
+
+    canvas.addEventListener('mousedown', startDraw);
+    canvas.addEventListener('touchstart', startDrawTouch);
+
+    canvas.addEventListener('mouseup', stopDraw);
+    canvas.addEventListener('mouseleave', stopDraw);
+    canvas.addEventListener('touchend', stopDrawTouch);
+
+    canvas.addEventListener('mousemove', draw);
+    canvas.addEventListener('touchmove', drawTouch);
+
+    // Draw function
+    function draw(e) {
+      if (!e.buttons) return; // Exit if not mouse click
+      ctx.lineTo(e.clientX - canvas.offsetLeft, e.clientY - canvas.offsetTop);
+      ctx.strokeStyle = penColor;
+      ctx.lineWidth = penThickness;
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+      ctx.stroke();
+    }
+
+    function drawTouch(e) {
+      e.preventDefault();
+      var touch = e.touches[0];
+      ctx.lineTo(touch.clientX - canvas.offsetLeft, touch.clientY - canvas.offsetTop);
+      ctx.strokeStyle = penColor;
+      ctx.lineWidth = penThickness;
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+      ctx.stroke();
+    }
+
+    function startDraw(e) {
+      if (e.button !== 0) return; // Exit if not left mouse button
+      ctx.beginPath();
+      ctx.moveTo(e.clientX - canvas.offsetLeft, e.clientY - canvas.offsetTop);
+      canvas.addEventListener('mousemove', draw);
+    }
+
+    function startDrawTouch(e) {
+      var touch = e.touches[0];
+      ctx.beginPath();
+      ctx.moveTo(touch.clientX - canvas.offsetLeft, touch.clientY - canvas.offsetTop);
+      canvas.addEventListener('touchmove', drawTouch);
+    }
+
+    function stopDraw() {
+      canvas.removeEventListener('mousemove', draw);
+    }
+
+    function stopDrawTouch() {
+      canvas.removeEventListener('touchmove', drawTouch);
+    }
+  };
+</script>
+</body>
+</html>
